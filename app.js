@@ -9,6 +9,9 @@ const jwt = require("jsonwebtoken");
 const saltRounds = 10;
 const Consumer = require("./Models/consumerModel");
 const Organization = require("./Models/organizationModel");
+const userSlot = require("./Models/usersSlotsModel");
+const consumerAuth = require("./Middlewares/consumeAuth");
+const organisationAuth = require("./Middlewares/organisationAuth");
 const Port = process.env.PORT || 8081;
 const app = express();
 app.use(cookieParser());
@@ -253,6 +256,37 @@ app.post("/organization/signin", async (req, res) => {
     console.log(error);
     return res.status(500).json({
       message: "something went wrong",
+    });
+  }
+});
+
+app.post("/consumer/bookSlot", async (req, res) => {
+  try {
+    const { consumerEmail, organizationId, startTime, endTime } = req.body;
+
+    const slot = userSlot.findOne({ _id: consumerid });
+    if (slot.rationReceived == true) {
+      return res.status(400).json({
+        message: "Slot already booked",
+      });
+    }
+    var currentTime = new Date();
+    const newSlot = new userSlot({
+      consumerEmail: consumerAuth,
+      organizationId: organizationId,
+      startTime: startTime,
+      endsTime: endTime,
+      bookingDate: currentTime,
+      rationReceived: false,
+    });
+    await userSlot.create(newSlot);
+    res.status(201).json({
+      message: "Slots created",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
     });
   }
 });
