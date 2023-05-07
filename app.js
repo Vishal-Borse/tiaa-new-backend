@@ -325,7 +325,7 @@ app.get("/organization/allEvents", organisationAuth, async (req, res) => {
   console.log("hii");
   try {
     console.log(req.rootOrganization);
-    const allEvents = await Events.findAll();
+    const allEvents = await Events.find();
     res.send(allEvents);
     console.log(allEvents);
   } catch (error) {}
