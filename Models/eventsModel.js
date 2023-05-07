@@ -33,6 +33,10 @@ const eventSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  eventCity:{
+    type: String,
+    required: true
+  },
   eventName: {
     type: String,
     required: true,

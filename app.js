@@ -322,12 +322,12 @@ app.post("/consumer/eventDetails", consumerAuth, async (req, res) => {
 });
 
 app.get("/organization/allEvents", organisationAuth, async (req, res) => {
+  console.log("hii");
   try {
     console.log(req.rootOrganization);
-    const allEvents = await Events.findAll({
-      organizationEmail: req.rootOrganization.email,
-    });
+    const allEvents = await Events.findAll();
     res.send(allEvents);
+    console.log(allEvents);
   } catch (error) {}
 });
 app.listen(Port, () => {
