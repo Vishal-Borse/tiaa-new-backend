@@ -18,7 +18,7 @@ const organisationAuth = require("./Middlewares/organizationAuth");
 const Port = process.env.PORT || 8081;
 const app = express();
 app.use(cookieParser());
-app.use(morgan("combined"))
+app.use(morgan("combined"));
 mongoose.set("strictQuery", true);
 app.use(
   cors({
@@ -270,23 +270,29 @@ app.post("/organization/signin", async (req, res) => {
 
 app.post("/consumer/bookSlot", consumerAuth, async (req, res) => {
   try {
-    const { consumerEmail, organizationId, startTime, endTime } = req.body;
+    const { eventId, startTime, endTime } = req.body;
 
-    const slot = userSlot.findOne({ _id: consumerid });
-    if (slot.rationReceived == true) {
+    const currentDate = new Date();
+    const result = await Consumer.findOne({ _id: req.rootConsumer._id });
+
+    const lastDate = new Date(result.lastSlotDate);
+    const diffTime = Math.abs(lastDate - currentDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 30) {
       return res.status(400).json({
-        message: "Slot already booked",
+        message: "You Cannot Book slot now",
       });
     }
-    var currentTime = new Date();
+
     const newSlot = new userSlot({
-      consumerEmail: consumerAuth,
-      organizationId: organizationId,
+      consumerEmail: req.rootConsumer.email,
+      eventId: eventId,
       startTime: startTime,
       endsTime: endTime,
-      bookingDate: currentTime,
-      rationReceived: false,
+      bookingDate: currentDate,
     });
+
     await userSlot.create(newSlot);
     res.status(201).json({
       message: "Slots created",
@@ -334,7 +340,7 @@ app.get("/organization/allEvents", organisationAuth, async (req, res) => {
   } catch (error) {}
 });
 
-app.post("/organization/addEvent", organisationAuth,async (req, res) => {
+app.post("/organization/addEvent", organisationAuth, async (req, res) => {
   console.log("Event API");
   try {
     const {
@@ -353,7 +359,7 @@ app.post("/organization/addEvent", organisationAuth,async (req, res) => {
       eventCity: eventCity,
       rationDetails: rationDetails,
       rationSchedule: scheduleDetails,
-      organizationEmail: req.rootOrganization.email
+      organizationEmail: req.rootOrganization.email,
     });
 
     const result = await Events.create(event);

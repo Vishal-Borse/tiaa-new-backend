@@ -5,10 +5,6 @@ const userSlotSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  organizationId: {
-    type: String,
-    required: true,
-  },
   startTime: {
     type: String,
     required: true,
@@ -21,11 +17,11 @@ const userSlotSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  rationReceived: {
-    type: Boolean,
+  eventId: {
+    type: String,
+    required: true
   },
 });
-
 
 const userSlotsModel = mongoose.model("userSlots", userSlotSchema);
 
