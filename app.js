@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const morgan = require("morgan");
 // const Authenticate = require("./Middlewares/authUser");
 const saltRounds = 10;
 const Consumer = require("./Models/consumerModel");
@@ -13,9 +14,11 @@ const userSlot = require("./Models/usersSlotsModel");
 const Events = require("./Models/eventsModel");
 const consumerAuth = require("./Middlewares/consumeAuth");
 const organisationAuth = require("./Middlewares/organizationAuth");
+
 const Port = process.env.PORT || 8081;
 const app = express();
 app.use(cookieParser());
+app.use(morgan("combined"))
 mongoose.set("strictQuery", true);
 app.use(
   cors({
@@ -329,6 +332,42 @@ app.get("/organization/allEvents", organisationAuth, async (req, res) => {
     res.send(allEvents);
     console.log(allEvents);
   } catch (error) {}
+});
+
+app.post("/organization/addEvent", organisationAuth,async (req, res) => {
+  console.log("Event API");
+  try {
+    const {
+      eventName,
+      eventState,
+      eventDate,
+      eventCity,
+      rationDetails,
+      scheduleDetails,
+    } = req.body;
+
+    const event = new Events({
+      eventName: eventName,
+      eventState: eventState,
+      eventDate: eventDate,
+      eventCity: eventCity,
+      rationDetails: rationDetails,
+      rationSchedule: scheduleDetails,
+      organizationEmail: req.rootOrganization.email
+    });
+
+    const result = await Events.create(event);
+    console.log(result);
+
+    res.status(201).json({
+      message: "Event Added successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "something went wrong",
+    });
+  }
 });
 app.listen(Port, () => {
   console.log(`listening on ${Port}`);

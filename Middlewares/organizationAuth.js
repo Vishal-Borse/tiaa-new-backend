@@ -5,6 +5,7 @@ const Organization = require("../Models/organizationModel.js");
 // app.use(cookieParser());
 
 const organizationAuth = async (req, res, next) => {
+  console.log("Entered in auth");
   try {
     const token = req.cookies.access_token_org;
     console.log(req.cookies);
@@ -29,7 +30,8 @@ const organizationAuth = async (req, res, next) => {
     req.rootOrganization = rootOrganization;
     req.organizationid = organization.organizationId;
     req.organizationemail = rootOrganization.email;
-
+    
+    console.log("Next");
     next();
   } catch (error) {
     console.log(error);
