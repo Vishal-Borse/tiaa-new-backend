@@ -25,3 +25,8 @@ const userSlotSchema = mongoose.Schema({
     type: Boolean,
   },
 });
+
+
+const userSlotsModel = mongoose.model("userSlots", userSlotSchema);
+
+module.exports = userSlotsModel;

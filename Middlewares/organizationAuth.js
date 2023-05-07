@@ -1,15 +1,15 @@
 const jwt = require("jsonwebtoken");
 // const  = require("../Models/consumerModel");
-const Organization = require("../Models/organization");
+const Organization = require("../Models/organizationModel.js");
 // var cookieParser = require("cookie-parser");
 // app.use(cookieParser());
 
 const organizationAuth = async (req, res, next) => {
   try {
     const token = req.cookies.jwtoken;
-    const organization = jwt.verify(token, process.env.SECRETKEY2);
+    const organization = jwt.verify(token, process.env.SECRETKEY1);
 
-    const rootOrganization = await User.findOne({
+    const rootOrganization = await Organization.findOne({
       _id: organization.organzationId,
     });
 

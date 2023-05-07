@@ -5,11 +5,17 @@ const Consumer = require("../Models/consumerModel");
 
 const consumerAuth = async (req, res, next) => {
   try {
-    const token = req.cookies.jwtoken;
+    const token = req.cookies.access_token;
+    console.log(req.cookies);
+    jwt.verify(token,process.env.SECRETKEY1,(err,user) => {
+      if (err) res.status(403).json("token is not valid")
+      console.log(user)
+  })
     const consumer = jwt.verify(token, process.env.SECRETKEY1);
+    console.log(consumer);
 
-    const rootConsumer = await User.findOne({ _id: consumer.consumerId });
-
+    const rootConsumer = await Consumer.findOne({ _id: consumer.consumerId });
+    console.log("hii");
     console.log(rootConsumer);
 
     if (!rootConsumer) {

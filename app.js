@@ -10,8 +10,9 @@ const saltRounds = 10;
 const Consumer = require("./Models/consumerModel");
 const Organization = require("./Models/organizationModel");
 const userSlot = require("./Models/usersSlotsModel");
+const Events = require("./Models/eventsModel");
 const consumerAuth = require("./Middlewares/consumeAuth");
-const organisationAuth = require("./Middlewares/organisationAuth");
+const organisationAuth = require("./Middlewares/organizationAuth");
 const Port = process.env.PORT || 8081;
 const app = express();
 app.use(cookieParser());
@@ -127,22 +128,24 @@ app.post("/consumer/signin", async (req, res) => {
         message: "Invalid Credinals",
       });
     }
-
+    console.log(existingConsumer._id);
     token = jwt.sign(
       { consumerId: existingConsumer._id },
       process.env.SECRETKEY1
     );
+    console.log(token);
 
-    res.cookie("jwtoken", token, {
-      expires: new Date(Date.now() + 25892000000),
-      httpOnly: true,
+    // res.cookie("jwtoken", token, {
+    //   expires: new Date(Date.now() + 25892000000),
+    //   httpOnly: true,
 
-      sameSite: process.env["NODE_ENV"] === "production" ? "none" : "lax", // must be 'none' to enable cross-site delivery
-      secure: process.env["NODE_ENV"] === "production", // must be true if sameSite='none',
-    });
+    //   sameSite: process.env["NODE_ENV"] === "production" ? "none" : "lax", // must be 'none' to enable cross-site delivery
+    //   secure: process.env["NODE_ENV"] === "production", // must be true if sameSite='none',
+    // });
 
     res.status(201).json({
       message: "Consumer Logged in successfully",
+      jwttoken: token,
     });
   } catch (error) {
     console.log(error);
@@ -260,7 +263,7 @@ app.post("/organization/signin", async (req, res) => {
   }
 });
 
-app.post("/consumer/bookSlot", async (req, res) => {
+app.post("/consumer/bookSlot", consumerAuth, async (req, res) => {
   try {
     const { consumerEmail, organizationId, startTime, endTime } = req.body;
 
@@ -291,6 +294,30 @@ app.post("/consumer/bookSlot", async (req, res) => {
   }
 });
 
+app.get("/consumer/getEvents", consumerAuth, async (req, res) => {
+  try {
+    const events = await Events.find();
+    console.log(events);
+    res.send(events);
+  } catch (error) {}
+});
+
+app.get("/consumer/getDetails", consumerAuth, async (req, res) => {
+  try {
+    const consumerDetails = await Consumer.find({ _id: req.consumerid });
+    console.log(consumerDetails);
+    res.send(consumerDetails);
+  } catch (error) {}
+});
+app.post("/consumer/eventDetails", consumerAuth, async (req, res) => {
+  try {
+    const { eventId } = req.body;
+
+    const result = await Events.findOne({ _id: eventId });
+
+    res.send(result);
+  } catch (error) {}
+});
 app.listen(Port, () => {
   console.log(`listening on ${Port}`);
 });

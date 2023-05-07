@@ -29,11 +29,19 @@ const eventSchema = mongoose.Schema({
       },
     },
   ],
+  eventState: {
+    type: String,
+    required: true,
+  },
   eventName: {
     type: String,
     required: true,
   },
   eventDate: {
+    type: String,
+    required: true,
+  },
+  organizationEmail: {
     type: String,
     required: true,
   },
@@ -57,6 +65,6 @@ const eventSchema = mongoose.Schema({
 
 // userSchema.index({ name: "text" });
 
-const organisationModel = mongoose.model("Organisation", organisationSchema);
+const eventsModel = mongoose.model("Events", eventSchema);
 
-module.exports = organisationModel;
+module.exports = eventsModel;
