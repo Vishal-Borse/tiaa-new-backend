@@ -6,11 +6,17 @@ const Organization = require("../Models/organizationModel.js");
 
 const organizationAuth = async (req, res, next) => {
   try {
-    const token = req.cookies.jwtoken;
+    const token = req.cookies.access_token;
+    console.log(req.cookies);
+    jwt.verify(token, process.env.SECRETKEY1, (err, user) => {
+      if (err) res.status(403).json("token is not valid");
+      console.log(user);
+    });
+    // const token = req.cookies.jwtoken;
     const organization = jwt.verify(token, process.env.SECRETKEY1);
 
     const rootOrganization = await Organization.findOne({
-      _id: organization.organzationId,
+      _id: organization.organizationId,
     });
 
     console.log(rootOrganization);
@@ -19,6 +25,7 @@ const organizationAuth = async (req, res, next) => {
       res.send("Organization not found");
     }
 
+    console.log(rootOrganization);
     req.rootOrganization = rootOrganization;
     req.organizationid = organization.organizationId;
     req.organizationemail = rootOrganization.email;

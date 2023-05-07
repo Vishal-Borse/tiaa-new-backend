@@ -160,7 +160,7 @@ app.post("/organization/signup", async (req, res) => {
     organizationName,
     organizationEmail,
     organizationPassword,
-    licenseId,
+    orgLicenseId,
     organizationState,
   } = req.body;
   console.log(req.body);
@@ -169,7 +169,7 @@ app.post("/organization/signup", async (req, res) => {
       !organizationName ||
       !organizationEmail ||
       !organizationPassword ||
-      !licenseId ||
+      !orgLicenseId ||
       !organizationState
     ) {
       return res.status(422).json({
@@ -189,7 +189,7 @@ app.post("/organization/signup", async (req, res) => {
 
     const organization = new Organization({
       name: organizationName,
-      licenseId: licenseId,
+      liscenseId: orgLicenseId,
       email: organizationEmail,
       password: hashedPassword,
     });
@@ -211,7 +211,6 @@ app.post("/organization/signin", async (req, res) => {
 
   console.log(req.body);
 
-  let token;
   try {
     if (!organizationEmail || !organizationPassword) {
       return res.status(422).json({
@@ -239,21 +238,24 @@ app.post("/organization/signin", async (req, res) => {
       });
     }
 
-    token = jwt.sign(
+    console.log(existingOrganization);
+    let token = jwt.sign(
       { organizationId: existingOrganization._id },
-      process.env.SECRETKEY2
+      process.env.SECRETKEY1
     );
+    console.log(token);
 
-    res.cookie("jwtoken", token, {
-      expires: new Date(Date.now() + 25892000000),
-      httpOnly: true,
+    // res.cookie("jwtoken", token, {
+    //   expires: new Date(Date.now() + 25892000000),
+    //   httpOnly: true,
 
-      sameSite: process.env["NODE_ENV"] === "production" ? "none" : "lax", // must be 'none' to enable cross-site delivery
-      secure: process.env["NODE_ENV"] === "production", // must be true if sameSite='none',
-    });
+    //   sameSite: process.env["NODE_ENV"] === "production" ? "none" : "lax", // must be 'none' to enable cross-site delivery
+    //   secure: process.env["NODE_ENV"] === "production", // must be true if sameSite='none',
+    // });
 
     res.status(201).json({
       message: "Organization Logged in successfully",
+      jwttoken: token,
     });
   } catch (error) {
     console.log(error);
@@ -316,6 +318,16 @@ app.post("/consumer/eventDetails", consumerAuth, async (req, res) => {
     const result = await Events.findOne({ _id: eventId });
 
     res.send(result);
+  } catch (error) {}
+});
+
+app.get("/organization/allEvents", organisationAuth, async (req, res) => {
+  try {
+    console.log(req.rootOrganization);
+    const allEvents = await Events.findAll({
+      organizationEmail: req.rootOrganization.email,
+    });
+    res.send(allEvents);
   } catch (error) {}
 });
 app.listen(Port, () => {

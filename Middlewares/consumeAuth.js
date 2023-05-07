@@ -7,10 +7,10 @@ const consumerAuth = async (req, res, next) => {
   try {
     const token = req.cookies.access_token;
     console.log(req.cookies);
-    jwt.verify(token,process.env.SECRETKEY1,(err,user) => {
-      if (err) res.status(403).json("token is not valid")
-      console.log(user)
-  })
+    jwt.verify(token, process.env.SECRETKEY1, (err, user) => {
+      if (err) res.status(403).json("token is not valid");
+      console.log(user);
+    });
     const consumer = jwt.verify(token, process.env.SECRETKEY1);
     console.log(consumer);
 
