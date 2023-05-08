@@ -12,6 +12,7 @@ const Consumer = require("./Models/consumerModel");
 const Organization = require("./Models/organizationModel");
 const userSlot = require("./Models/usersSlotsModel");
 const Events = require("./Models/eventsModel");
+const Wishlist = require("./Models/wishListModel");
 const consumerAuth = require("./Middlewares/consumeAuth");
 const organisationAuth = require("./Middlewares/organizationAuth");
 
@@ -270,23 +271,76 @@ app.post("/organization/signin", async (req, res) => {
 
 app.post("/consumer/bookSlot", consumerAuth, async (req, res) => {
   try {
+    const currentDate = new Date();
     const { eventId, startTime, endTime } = req.body;
 
-    const currentDate = new Date();
+    const eventData = await Events.findOne({ _id: eventId });
+    console.log(eventData.rationDetails);
+
+    eventData.rationDetails.forEach((detail) => {
+      if (detail.quantity < detail.allocatedPerUser) {
+        console.log("Event is out of Stock");
+        //add user to wishlist
+
+        Wishlist.create()
+
+        return res.status(400).json({
+          message: "Event is out of Stock",
+        });
+      }
+    });
+    if (
+      eventData.rationDetails[0].quantity <= eventData.percent30Data[0].quantity
+    ) {
+      eventData.rationDetails.forEach((detail) => {
+        detail.allocatedPerUser = Math.floor(detail.allocatedPerUser * 0.9);
+      });
+    }
+    if (
+      eventData.rationDetails[0].quantity <= eventData.percent50Data[0].quantity
+    ) {
+      eventData.rationDetails.forEach((detail) => {
+        detail.allocatedPerUser = Math.floor(detail.allocatedPerUser * 0.8);
+      });
+    }
+    if (
+      eventData.rationDetails[0].quantity <= eventData.percent70Data[0].quantity
+    ) {
+      eventData.rationDetails.forEach((detail) => {
+        detail.allocatedPerUser = Math.floor(detail.allocatedPerUser * 0.9);
+      });
+    }
+
+    console.log(eventData.rationDetails);
+
     const result = await Consumer.findOne({ _id: req.rootConsumer._id });
-    console.log("REsult : " + result);
     if (result.registeredEvents.includes(eventId)) {
       console.log("You Cannot Book slot now for this event");
       return res.status(400).json({
         message: "You Cannot Book slot now for this event",
       });
     }
+    const rationDetailsConsumer = [];
+    eventData.rationDetails.forEach((detail) => {
+      const data = {
+        Item: detail.item,
+        Quantity: detail.allocatedPerUser,
+      };
+      detail.quantity = detail.quantity - detail.allocatedPerUser;
+      rationDetailsConsumer.push(data);
+    });
+
+    console.log(rationDetailsConsumer);
+
+    const RationDetails = eventData.rationDetails;
+
     const newSlot = new userSlot({
       consumerEmail: req.rootConsumer.email,
       eventId: eventId,
       startTime: startTime,
       endsTime: endTime,
       bookingDate: currentDate,
+      rationDetails: rationDetailsConsumer,
     });
 
     // const lastDate = result.lastSlotDate;
@@ -301,6 +355,11 @@ app.post("/consumer/bookSlot", consumerAuth, async (req, res) => {
     //     message: "You Cannot Book slot now",
     //   });
     // }
+
+    const response = await Events.findByIdAndUpdate(
+      { _id: eventId },
+      { rationDetails: RationDetails }
+    );
 
     const eventDetails = Events.findOne({ _id: eventId });
     const data = await userSlot.create(newSlot);
@@ -385,6 +444,31 @@ app.post("/organization/addEvent", organisationAuth, async (req, res) => {
       scheduleDetails,
     } = req.body;
 
+    const percent_30 = [];
+    const percent_50 = [];
+    const percent_70 = [];
+
+    rationDetails.forEach((detail) => {
+      const data_30 = {
+        item: detail.item,
+        quantity: detail.quantity - Math.floor(detail.quantity * 0.3),
+      };
+      const data_50 = {
+        item: detail.item,
+        quantity: detail.quantity - Math.floor(detail.quantity * 0.5),
+      };
+      const data_70 = {
+        item: detail.item,
+        quantity: detail.quantity - Math.floor(detail.quantity * 0.7),
+      };
+
+      percent_30.push(data_30);
+      percent_50.push(data_50);
+      percent_70.push(data_70);
+    });
+
+    console.log(percent_30, percent_50, percent_70);
+
     const event = new Events({
       eventName: eventName,
       eventState: eventState,
@@ -393,15 +477,18 @@ app.post("/organization/addEvent", organisationAuth, async (req, res) => {
       rationDetails: rationDetails,
       rationSchedule: scheduleDetails,
       organizationEmail: req.rootOrganization.email,
+      percent30Data: percent_30,
+      percent50Data: percent_50,
+      percent70Data: percent_70,
     });
 
     const result = await Events.create(event);
     console.log(result);
 
     const usersEmail = await Consumer.find();
-    for (var j = 0; j < myArray.length; j++) {
-      console.log(myArray[j]);
-    }
+    // for (var j = 0; j < myArray.length; j++) {
+    //   console.log(myArray[j]);
+    // }
 
     res.status(201).json({
       message: "Event Added successfully",

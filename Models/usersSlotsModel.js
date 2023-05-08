@@ -19,8 +19,20 @@ const userSlotSchema = mongoose.Schema({
   },
   eventId: {
     type: String,
-    required: true
+    required: true,
   },
+  rationDetails: [
+    {
+      Item: {
+        type: String,
+        required: true,
+      },
+      Quantity: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 });
 
 const userSlotsModel = mongoose.model("userSlots", userSlotSchema);

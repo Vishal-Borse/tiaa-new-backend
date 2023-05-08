@@ -61,6 +61,46 @@ const eventSchema = mongoose.Schema({
       },
     },
   ],
+  // totalBeneficiaries: {
+  //   type: Number,
+  //   required: true,
+  // },
+  percent30Data: [
+    {
+      item: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
+  percent50Data: [
+    {
+      item: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
+  percent70Data: [
+    {
+      item: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 
   //   liscenseId: { type: String, required: true },
   //   email: { type: String, required: true },
