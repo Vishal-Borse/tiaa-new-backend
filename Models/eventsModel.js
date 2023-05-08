@@ -33,9 +33,9 @@ const eventSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  eventCity:{
+  eventCity: {
     type: String,
-    required: true
+    required: true,
   },
   eventName: {
     type: String,

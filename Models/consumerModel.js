@@ -10,6 +10,7 @@ const consumerSchema = mongoose.Schema({
   phone: { type: Number, default: 0 },
   password: { type: String, required: true },
   lastSlotDate: { type: String, required: true },
+  registeredEvents : [ {type:String}]
 });
 
 const consumerModel = mongoose.model("Consumer", consumerSchema);

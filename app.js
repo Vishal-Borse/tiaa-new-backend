@@ -274,17 +274,13 @@ app.post("/consumer/bookSlot", consumerAuth, async (req, res) => {
 
     const currentDate = new Date();
     const result = await Consumer.findOne({ _id: req.rootConsumer._id });
-
-    const lastDate = new Date(result.lastSlotDate);
-    const diffTime = Math.abs(lastDate - currentDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 30) {
+    console.log("REsult : " + result);
+    if (result.registeredEvents.includes(eventId)) {
+      console.log("You Cannot Book slot now for this event");
       return res.status(400).json({
-        message: "You Cannot Book slot now",
+        message: "You Cannot Book slot now for this event",
       });
     }
-
     const newSlot = new userSlot({
       consumerEmail: req.rootConsumer.email,
       eventId: eventId,
@@ -293,7 +289,33 @@ app.post("/consumer/bookSlot", consumerAuth, async (req, res) => {
       bookingDate: currentDate,
     });
 
-    await userSlot.create(newSlot);
+    // const lastDate = result.lastSlotDate;
+    // const diffTime = Math.abs(lastDate - currentDate);
+    // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // console.log(currentDate);
+    // console.log(lastDate);
+    // console.log(diffDays);
+
+    // if (diffDays < 30) {
+    //   return res.status(400).json({
+    //     message: "You Cannot Book slot now",
+    //   });
+    // }
+
+    const eventDetails = Events.findOne({ _id: eventId });
+    const data = await userSlot.create(newSlot);
+    console.log(data);
+    await Consumer.updateOne(
+      {
+        _id: req.rootConsumer._id,
+      },
+      { $push: { registeredEvents: eventId } }
+    );
+    // const newArray = result.registeredEvents.push(eventId);
+    // await Consumer.findByIdAndUpdate(
+    //   { _id: req.rootConsumer._id },
+    //   { registeredEvents: newArray }
+    // );
     res.status(201).json({
       message: "Slots created",
     });
@@ -320,6 +342,15 @@ app.get("/consumer/getDetails", consumerAuth, async (req, res) => {
     res.send(consumerDetails);
   } catch (error) {}
 });
+app.get("/organization/getDetails", organisationAuth, async (req, res) => {
+  try {
+    const organizationDetails = await Organization.find({
+      _id: req.rootOrganization._id,
+    });
+    console.log(organizationDetails);
+    res.send(organizationDetails);
+  } catch (error) {}
+});
 app.post("/consumer/eventDetails", consumerAuth, async (req, res) => {
   try {
     const { eventId } = req.body;
@@ -334,7 +365,9 @@ app.get("/organization/allEvents", organisationAuth, async (req, res) => {
   console.log("hii");
   try {
     console.log(req.rootOrganization);
-    const allEvents = await Events.find();
+    const allEvents = await Events.find({
+      organizationEmail: req.rootOrganization.email,
+    });
     res.send(allEvents);
     console.log(allEvents);
   } catch (error) {}
@@ -355,7 +388,7 @@ app.post("/organization/addEvent", organisationAuth, async (req, res) => {
     const event = new Events({
       eventName: eventName,
       eventState: eventState,
-      eventDate: eventDate,
+      eventDate: new Date(eventDate),
       eventCity: eventCity,
       rationDetails: rationDetails,
       rationSchedule: scheduleDetails,
@@ -364,6 +397,11 @@ app.post("/organization/addEvent", organisationAuth, async (req, res) => {
 
     const result = await Events.create(event);
     console.log(result);
+
+    const usersEmail = await Consumer.find();
+    for (var j = 0; j < myArray.length; j++) {
+      console.log(myArray[j]);
+    }
 
     res.status(201).json({
       message: "Event Added successfully",
