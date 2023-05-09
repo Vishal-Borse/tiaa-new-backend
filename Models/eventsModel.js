@@ -101,6 +101,18 @@ const eventSchema = mongoose.Schema({
       },
     },
   ],
+  reservedData: [
+    {
+      item: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 
   //   liscenseId: { type: String, required: true },
   //   email: { type: String, required: true },

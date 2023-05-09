@@ -166,6 +166,7 @@ app.post("/organization/signup", async (req, res) => {
     organizationPassword,
     orgLicenseId,
     organizationState,
+    organizationCity
   } = req.body;
   console.log(req.body);
   try {
@@ -196,6 +197,7 @@ app.post("/organization/signup", async (req, res) => {
       liscenseId: orgLicenseId,
       email: organizationEmail,
       password: hashedPassword,
+      
     });
 
     await Organization.create(organization);
@@ -281,8 +283,6 @@ app.post("/consumer/bookSlot", consumerAuth, async (req, res) => {
       if (detail.quantity < detail.allocatedPerUser) {
         console.log("Event is out of Stock");
         //add user to wishlist
-
-        Wishlist.create()
 
         return res.status(400).json({
           message: "Event is out of Stock",
@@ -447,6 +447,19 @@ app.post("/organization/addEvent", organisationAuth, async (req, res) => {
     const percent_30 = [];
     const percent_50 = [];
     const percent_70 = [];
+    // const reservedData = [];
+
+    // rationDetails.forEach((detail) => {
+    //   const data = {
+    //     item: Math.floor(detail.item * 0.5),
+    //     quantity: Math.floor(detail.quantity * 0.5),
+    //   };
+    //   detail.quantity = detail.quantity - data.quantity;
+    //   reservedData.push(data);
+    // });
+
+    console.log("Reserved Data");
+    console.log(rationDetails);
 
     rationDetails.forEach((detail) => {
       const data_30 = {
@@ -480,6 +493,7 @@ app.post("/organization/addEvent", organisationAuth, async (req, res) => {
       percent30Data: percent_30,
       percent50Data: percent_50,
       percent70Data: percent_70,
+      reservedData: reservedData,
     });
 
     const result = await Events.create(event);
